@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import JobApplication from "../models/JobApplication";
+import { PipelineStage } from "mongoose";
 
 export const createApplication = async (req: Request, res: Response) => {
   try {
@@ -71,5 +72,95 @@ export const getDueFollowUps = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ message: "Error fetching follow-up reminders", error: err });
+  }
+};
+
+export const getApplicationsCount = async (_: Request, res: Response) => {
+  try {
+    const count = await JobApplication.countDocuments();
+    res.status(200).json({ count });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error counting applications", error: err });
+  }
+};
+
+export const getApplicationsOverTime = async (_: Request, res: Response) => {
+  try {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          appliedAt: { $type: "date" },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$appliedAt" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
+    ];
+
+    const results = await JobApplication.aggregate(pipeline);
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const formatted = months.map((month, index) => {
+      const found = results.find((r) => r._id === index + 1);
+      return { month, count: found?.count || 0 };
+    });
+
+    res.status(200).json(formatted);
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching application trends",
+      error: (err as Error).message,
+    });
+  }
+};
+
+export const getApplicationsPerDay = async (_: Request, res: Response) => {
+  try {
+    const data = await JobApplication.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$appliedAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Format to { "2025-07-01": 3, "2025-07-02": 1, ... }
+    const formatted: Record<string, number> = {};
+    data.forEach((item) => {
+      formatted[item._id] = item.count;
+    });
+
+    res.status(200).json(formatted);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error fetching heatmap data", error: err });
   }
 };

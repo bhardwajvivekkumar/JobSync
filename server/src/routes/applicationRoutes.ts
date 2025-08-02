@@ -5,6 +5,9 @@ import {
   getApplicationById,
   updateApplication,
   getDueFollowUps,
+  getApplicationsCount,
+  getApplicationsOverTime,
+  getApplicationsPerDay,
 } from "../controllers/applicationController";
 import JobApplication from "../models/JobApplication";
 
@@ -29,5 +32,8 @@ router.put("/:id/followup-toggle", async (req, res) => {
     res.status(500).json({ message: "Failed to toggle follow-up status" });
   }
 });
+router.get("/dashboard/count", getApplicationsCount);
+router.get("/dashboard/trends", getApplicationsOverTime);
+router.get("/dashboard/activity", getApplicationsPerDay);
 
 export default router;

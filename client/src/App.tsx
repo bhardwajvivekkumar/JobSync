@@ -6,6 +6,7 @@ import ApplicationList from "./pages/ApplicationList";
 import Settings from "./pages/Settings";
 import { Box } from "@mui/material";
 import ApplicationDetails from "./pages/ApplicationDetails";
+import BlogDetail from "./components/BlogDetail";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/applications" element={<ApplicationList />} />
           <Route path="/applications/:id" element={<ApplicationDetails />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
         </Routes>
       </Box>
     </>

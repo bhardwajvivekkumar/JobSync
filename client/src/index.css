@@ -29,3 +29,35 @@ body,
 /* body { */
   /* background-color: #d3d3d3; light grey background */
 /* } */
+
+.color-empty {
+  fill: #bdbbbb;
+}
+.color-scale-1 {
+  fill: #797978;
+}
+.color-scale-2 {
+  fill: #383838;
+}
+.color-scale-3 {
+  fill: #1d1d1d;
+}
+.color-scale-4 {
+  fill: #050505;
+}
+
+/* Ensure images scale properly on all screen sizes */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto; /* Center images */
+}
+
+/* Ensure code blocks are scrollable horizontally if too long */
+pre, code {
+  white-space: pre-wrap; /* Allow wrapping for code lines */
+  word-wrap: break-word; /* Break words if they are too long */
+  overflow-x: auto; /* Allow horizontal scrolling for long lines of code */
+  max-width: 100%; /* Prevent content overflow */
+}

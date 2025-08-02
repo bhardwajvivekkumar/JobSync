@@ -1,0 +1,15 @@
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto; /* Center images */
+}
+
+/* Ensure code blocks are scrollable horizontally if too long */
+.blog-content pre,
+.blog-content code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  max-width: 100%; /* Prevent content overflow */
+}
