@@ -69,7 +69,7 @@ export default function JobApplicationForm() {
   return (
     <Box
       sx={{
-        backgroundColor: "#302f2fff", // dark grey
+        backgroundColor: "#e9e6e6ff", // dark grey
         minHeight: "100vh",
         margin: 0,
         padding: 0,
@@ -133,14 +133,15 @@ export default function JobApplicationForm() {
             <TextField
               label="Status"
               select
-              defaultValue="applied"
+              defaultValue="Applied"
               {...register("status")}
               sx={textFieldStyle}
             >
-              <MenuItem value="applied">Applied</MenuItem>
-              <MenuItem value="interviewing">Interviewing</MenuItem>
-              <MenuItem value="rejected">Rejected</MenuItem>
-              <MenuItem value="offer">Offer</MenuItem>
+              <MenuItem value="Applied">Applied</MenuItem>
+              <MenuItem value="Interview">Interview</MenuItem>
+              <MenuItem value="Rejected">Rejected</MenuItem>
+              <MenuItem value="Offer">Offer</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
             </TextField>
 
             <TextField

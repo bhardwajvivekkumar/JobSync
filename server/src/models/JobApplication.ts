@@ -19,7 +19,11 @@ const JobApplicationSchema: Schema = new Schema({
   jobTitle: { type: String, required: true },
   jobLink: { type: String },
   location: { type: String },
-  status: { type: String, default: "applied" },
+  status: {
+    type: String,
+    enum: ["Applied", "Interview", "Offer", "Rejected", "Other"],
+    default: "Applied",
+  },
   appliedAt: { type: Date, default: Date.now },
   followUpReminder: { type: Date },
   followUpDone: { type: Boolean, default: false },

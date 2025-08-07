@@ -164,3 +164,28 @@ export const getApplicationsPerDay = async (_: Request, res: Response) => {
       .json({ message: "Error fetching heatmap data", error: err });
   }
 };
+
+export const getApplicationsByStatus = async (_: Request, res: Response) => {
+  try {
+    const results = await JobApplication.aggregate([
+      {
+        $group: {
+          _id: "$status", // Assuming each application has a `status` field
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const formatted = results.map((r) => ({
+      status: r._id || "Unknown",
+      count: r.count,
+    }));
+
+    res.status(200).json(formatted);
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching applications by status",
+      error: (err as Error).message,
+    });
+  }
+};

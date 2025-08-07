@@ -8,6 +8,7 @@ import {
   getApplicationsCount,
   getApplicationsOverTime,
   getApplicationsPerDay,
+  getApplicationsByStatus,
 } from "../controllers/applicationController";
 import JobApplication from "../models/JobApplication";
 
@@ -35,5 +36,31 @@ router.put("/:id/followup-toggle", async (req, res) => {
 router.get("/dashboard/count", getApplicationsCount);
 router.get("/dashboard/trends", getApplicationsOverTime);
 router.get("/dashboard/activity", getApplicationsPerDay);
+// router.get("/dashboard/status", getApplicationsByStatus);
+
+router.get("/dashboard/status", async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ];
+
+    const statusCounts = await JobApplication.aggregate(pipeline);
+
+    const result: { [key: string]: number } = {};
+    statusCounts.forEach((item) => {
+      result[item._id] = item.count;
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error("Error in status dashboard:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 export default router;
