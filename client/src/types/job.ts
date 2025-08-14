@@ -5,7 +5,7 @@ export interface JobApplication {
   jobTitle: string;
   jobLink?: string;
   location?: string;
-  status: "applied" | "interviewing" | "rejected" | "offer";
+  status: "Applied" | "interviewing" | "rejected" | "offer";
   appliedAt?: string;
   followUpReminder?: string;
   followUpDone?: boolean;

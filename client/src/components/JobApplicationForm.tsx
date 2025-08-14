@@ -19,7 +19,7 @@ const defaultValues: JobApplication = {
   jobTitle: "",
   jobLink: "",
   location: "",
-  status: "applied",
+  status: "Applied",
   appliedAt: new Date().toISOString().split("T")[0],
   followUpReminder: new Date().toISOString().split("T")[0],
   followUpDone: false,

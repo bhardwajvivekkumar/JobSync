@@ -11,11 +11,33 @@ import {
   getApplicationsByStatus,
 } from "../controllers/applicationController";
 import JobApplication from "../models/JobApplication";
+import { protect } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.post("/", createApplication);
-router.get("/", getAllApplications);
+router.get("/", protect, async (req, res) => {
+  try {
+    const apps = await JobApplication.find({ userId: req.user._id }); // req.user comes from protect middleware
+    res.json(apps);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching applications", error });
+  }
+});
+
+router.post("/", protect, async (req, res) => {
+  try {
+    const application = await JobApplication.create({
+      ...req.body,
+      userId: req.user._id, // store logged-in user
+    });
+    res.status(201).json(application);
+  } catch (error) {
+    res.status(400).json({ message: "Error creating application", error });
+  }
+});
+
+router.post("/", protect, createApplication);
+router.get("/", protect, getAllApplications);
 router.get("/followups/due", getDueFollowUps);
 router.get("/:id", getApplicationById);
 router.put("/:id", updateApplication);
