@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const defaultValues: JobApplication = {
-  userId: "test123", // replace with dynamic ID if needed
   company: "",
   jobTitle: "",
   jobLink: "",
@@ -38,13 +37,30 @@ export default function JobApplicationForm() {
 
   const onSubmit = async (data: JobApplication) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire({
+          icon: "error",
+          title: "Not Logged In",
+          text: "You must be logged in to submit a job application.",
+          confirmButtonColor: "#000",
+        });
+        return;
+      }
+
       const tags =
         typeof data.tags === "string"
           ? data.tags.split(",").map((tag) => tag.trim())
           : [];
 
       const payload = { ...data, tags };
-      await api.post("/applications", payload);
+
+      // Send request with Authorization header
+      await api.post("/applications", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       Swal.fire({
         icon: "success",
@@ -69,14 +85,11 @@ export default function JobApplicationForm() {
   return (
     <Box
       sx={{
-        backgroundColor: "#e9e6e6ff", // dark grey
+        backgroundColor: "#e9e6e6ff",
         minHeight: "100vh",
-        margin: 0,
-        padding: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
       }}
     >
       <Container maxWidth="sm" disableGutters>
@@ -118,16 +131,12 @@ export default function JobApplicationForm() {
               label="Job Link"
               {...register("jobLink")}
               sx={textFieldStyle}
-              InputProps={{ sx: { color: "black" } }}
-              InputLabelProps={{ sx: { color: "black" } }}
             />
 
             <TextField
               label="Location"
               {...register("location")}
               sx={textFieldStyle}
-              InputProps={{ sx: { color: "black" } }}
-              InputLabelProps={{ sx: { color: "black" } }}
             />
 
             <TextField

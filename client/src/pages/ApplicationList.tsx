@@ -11,13 +11,26 @@ const ApplicationList = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await axios.get("/api/applications");
+        const token = localStorage.getItem("token"); // Retrieve token after login
+
+        if (!token) {
+          console.error("No token found, user not logged in");
+          return;
+        }
+
+        const res = await axios.get("/api/applications", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token to backend
+          },
+        });
+
         console.log("Fetched applications:", res.data);
         setApplications(res.data);
       } catch (err) {
         console.error("Error fetching applications:", err);
       }
     };
+
     fetchApplications();
   }, []);
 

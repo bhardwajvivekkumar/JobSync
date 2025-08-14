@@ -38,7 +38,7 @@ router.post("/", protect, async (req, res) => {
 
 router.post("/", protect, createApplication);
 router.get("/", protect, getAllApplications);
-router.get("/followups/due", getDueFollowUps);
+router.get("/followups/due", protect, getDueFollowUps);
 router.get("/:id", getApplicationById);
 router.put("/:id", updateApplication);
 router.put("/:id/followup-toggle", async (req, res) => {

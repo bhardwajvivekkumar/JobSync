@@ -2,18 +2,36 @@ import { Request, Response } from "express";
 import JobApplication from "../models/JobApplication";
 import { PipelineStage } from "mongoose";
 
-export const createApplication = async (req: Request, res: Response) => {
+// Ensure Request has user
+interface AuthRequest extends Request {
+  user?: { id: string };
+}
+
+// CREATE application for logged-in user
+export const createApplication = async (req: AuthRequest, res: Response) => {
   try {
-    const job = await JobApplication.create(req.body);
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    const job = await JobApplication.create({
+      ...req.body,
+      user: req.user.id, // bind application to the logged-in user
+    });
     res.status(201).json(job);
   } catch (err) {
     res.status(500).json({ message: "Error creating application", error: err });
   }
 };
 
-export const getAllApplications = async (_: Request, res: Response) => {
+// GET all applications for logged-in user
+export const getAllApplications = async (req: AuthRequest, res: Response) => {
   try {
-    const jobs = await JobApplication.find();
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    const jobs = await JobApplication.find({ user: req.user.id });
     res.status(200).json(jobs);
   } catch (err) {
     res
@@ -22,32 +40,48 @@ export const getAllApplications = async (_: Request, res: Response) => {
   }
 };
 
-export const getApplicationById = async (req: Request, res: Response) => {
+// GET one application (only if owned by the user)
+export const getApplicationById = async (req: AuthRequest, res: Response) => {
   try {
-    const application = await JobApplication.findById(req.params.id);
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    const application = await JobApplication.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
+
     res.status(200).json(application);
   } catch (err) {
     res.status(500).json({ message: "Error fetching application", error: err });
   }
 };
 
-export const updateApplication = async (req: Request, res: Response) => {
+// UPDATE application (only if owned by the user)
+export const updateApplication = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
 
-    // Convert incoming date strings to Date objects if necessary
+    const { id } = req.params;
     const updateData = { ...req.body };
+
     if (updateData.appliedAt)
       updateData.appliedAt = new Date(updateData.appliedAt);
     if (updateData.followUpReminder)
       updateData.followUpReminder = new Date(updateData.followUpReminder);
 
-    const updated = await JobApplication.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+    const updated = await JobApplication.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      updateData,
+      { new: true }
+    );
 
     if (!updated) {
       return res.status(404).json({ message: "Application not found" });
@@ -59,25 +93,34 @@ export const updateApplication = async (req: Request, res: Response) => {
   }
 };
 
-export const getDueFollowUps = async (req: Request, res: Response) => {
+// GET due follow-ups for the logged-in user
+export const getDueFollowUps = async (req: AuthRequest, res: Response) => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
 
+    const today = new Date().toISOString().split("T")[0];
     const dueFollowUps = await JobApplication.find({
+      userId: req.user.id,
       followUpReminder: { $lte: new Date(today + "T23:59:59Z") },
       followUpDone: false,
     });
+
     res.status(200).json(dueFollowUps);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error fetching follow-up reminders", error: err });
+    res.status(500).json({ message: "Error fetching follow-ups", error: err });
   }
 };
 
-export const getApplicationsCount = async (_: Request, res: Response) => {
+// GET application count for logged-in user
+export const getApplicationsCount = async (req: AuthRequest, res: Response) => {
   try {
-    const count = await JobApplication.countDocuments();
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    const count = await JobApplication.countDocuments({ user: req.user.id });
     res.status(200).json({ count });
   } catch (err) {
     res
@@ -86,11 +129,20 @@ export const getApplicationsCount = async (_: Request, res: Response) => {
   }
 };
 
-export const getApplicationsOverTime = async (_: Request, res: Response) => {
+// GET monthly application trends for logged-in user
+export const getApplicationsOverTime = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
     const pipeline: PipelineStage[] = [
       {
         $match: {
+          user: req.user.id,
           appliedAt: { $type: "date" },
         },
       },
@@ -100,15 +152,10 @@ export const getApplicationsOverTime = async (_: Request, res: Response) => {
           count: { $sum: 1 },
         },
       },
-      {
-        $sort: {
-          _id: 1,
-        },
-      },
+      { $sort: { _id: 1 } },
     ];
 
     const results = await JobApplication.aggregate(pipeline);
-
     const months = [
       "Jan",
       "Feb",
@@ -130,28 +177,31 @@ export const getApplicationsOverTime = async (_: Request, res: Response) => {
 
     res.status(200).json(formatted);
   } catch (err) {
-    res.status(500).json({
-      message: "Error fetching application trends",
-      error: (err as Error).message,
-    });
+    res.status(500).json({ message: "Error fetching trends", error: err });
   }
 };
 
-export const getApplicationsPerDay = async (_: Request, res: Response) => {
+// GET heatmap per day for logged-in user
+export const getApplicationsPerDay = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
     const data = await JobApplication.aggregate([
+      { $match: { user: req.user.id } },
       {
         $group: {
-          _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$appliedAt" },
-          },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$appliedAt" } },
           count: { $sum: 1 },
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    // Format to { "2025-07-01": 3, "2025-07-02": 1, ... }
     const formatted: Record<string, number> = {};
     data.forEach((item) => {
       formatted[item._id] = item.count;
@@ -159,18 +209,25 @@ export const getApplicationsPerDay = async (_: Request, res: Response) => {
 
     res.status(200).json(formatted);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error fetching heatmap data", error: err });
+    res.status(500).json({ message: "Error fetching heatmap", error: err });
   }
 };
 
-export const getApplicationsByStatus = async (_: Request, res: Response) => {
+// GET applications by status for logged-in user
+export const getApplicationsByStatus = async (
+  req: AuthRequest,
+  res: Response
+) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
     const results = await JobApplication.aggregate([
+      { $match: { user: req.user.id } },
       {
         $group: {
-          _id: "$status", // Assuming each application has a `status` field
+          _id: "$status",
           count: { $sum: 1 },
         },
       },
@@ -183,9 +240,6 @@ export const getApplicationsByStatus = async (_: Request, res: Response) => {
 
     res.status(200).json(formatted);
   } catch (err) {
-    res.status(500).json({
-      message: "Error fetching applications by status",
-      error: (err as Error).message,
-    });
+    res.status(500).json({ message: "Error fetching status data", error: err });
   }
 };

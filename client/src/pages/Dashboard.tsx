@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Typography, Paper, CircularProgress } from "@mui/material";
-import axios from "axios";
+// import axios from "axios";
 import {
   BarChart,
   Bar,
@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import BlogSection from "../components/BlogSection";
+import api from "../services/api";
 
 const Dashboard = () => {
   const [count, setCount] = useState<number>(0);
@@ -28,10 +29,11 @@ const Dashboard = () => {
     const loadDashboard = async () => {
       try {
         const [c, t, s] = await Promise.all([
-          axios.get("/api/applications/dashboard/count"),
-          axios.get("/api/applications/dashboard/trends"),
-          axios.get("/api/applications/dashboard/status"),
+          api.get("/applications/dashboard/count"),
+          api.get("/applications/dashboard/trends"),
+          api.get("/applications/dashboard/status"),
         ]);
+
         setCount(c.data.count);
         setTrends(t.data);
 
@@ -40,7 +42,6 @@ const Dashboard = () => {
           interviewing: "Interview",
           offer: "Offer",
           rejected: "Rejected",
-          // archived: "Archived",
         };
 
         const formatted: typeof statusStats = {};
@@ -56,6 +57,7 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
+
     loadDashboard();
   }, []);
 

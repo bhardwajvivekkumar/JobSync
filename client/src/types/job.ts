@@ -1,13 +1,14 @@
 export interface JobApplication {
   _id?: string;
-  userId: string;
+  userId?: string;
   company: string;
   jobTitle: string;
   jobLink?: string;
   location?: string;
-  status: "Applied" | "interviewing" | "rejected" | "offer";
+  status: "Applied" | "Interview" | "Offer" | "Rejected" | "Other";
   appliedAt?: string;
   followUpReminder?: string;
   followUpDone?: boolean;
+  followUpDue?: boolean;
   tags: string;
 }

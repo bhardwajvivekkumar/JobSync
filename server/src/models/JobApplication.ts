@@ -10,6 +10,7 @@ export interface IJobApplication extends Document {
   appliedAt: Date;
   followUpReminder: Date;
   followUpDone: boolean;
+  followUpDue?: boolean;
   tags: string[];
 }
 
@@ -27,6 +28,7 @@ const JobApplicationSchema: Schema = new Schema({
   appliedAt: { type: Date, default: Date.now },
   followUpReminder: { type: Date },
   followUpDone: { type: Boolean, default: false },
+  followUpDue: { type: Boolean, default: false },
   tags: [{ type: String }],
 });
 

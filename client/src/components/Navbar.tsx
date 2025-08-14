@@ -55,7 +55,14 @@ const Navbar = () => {
   useEffect(() => {
     const fetchDueFollowUps = async () => {
       try {
-        const res = await fetch("/api/applications/followups/due");
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/applications/followups/due", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch follow-ups");
         const data = await res.json();
         setDueFollowUps(data);
       } catch (err) {
