@@ -3,22 +3,32 @@ import { User } from "../models/User";
 import { Request, Response, NextFunction } from "express";
 
 export const protect = async (
-  req: Request & { user?: any },
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let token;
-  if (req.headers.authorization?.startsWith("Bearer")) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-      req.user = await User.findById(decoded.id).select("-password");
-      next();
-    } catch (error) {
-      res.status(401).json({ message: "Not authorized, token failed" });
-    }
-  }
+  const token = req?.headers?.authorization?.replace("Bearer ", "");
+
   if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
+
+  try {
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    next();
+  } catch (error) {
+    res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
