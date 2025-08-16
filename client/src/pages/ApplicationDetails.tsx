@@ -16,9 +16,10 @@ import EditIcon from "@mui/icons-material/Edit";
 // import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 import dayjs from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import api from "../services/api";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
@@ -46,7 +47,7 @@ const ApplicationDetails = () => {
   useEffect(() => {
     const fetchApplication = async () => {
       try {
-        const res = await axios.get(`/api/applications/${id}`);
+        const res = await api.get(`/applications/${id}`);
         setAppData(res.data);
         setTempData(res.data);
       } catch (err) {
@@ -91,7 +92,7 @@ const ApplicationDetails = () => {
 
   const handleConfirmSave = async () => {
     try {
-      await axios.put(`/api/applications/${id}`, tempData);
+      await api.put(`/applications/${id}`, tempData);
       setAppData(tempData);
       setEditableFields({});
       setIsGlobalEdit(false);

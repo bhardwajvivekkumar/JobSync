@@ -11,6 +11,13 @@ import {
 } from "recharts";
 import BlogSection from "../components/BlogSection";
 import api from "../services/api";
+// import { jwtDecode } from "jwt-decode";
+
+interface IUser {
+  _id: string;
+  name: string;
+  email: string;
+}
 
 const Dashboard = () => {
   const [count, setCount] = useState<number>(0);
@@ -23,7 +30,21 @@ const Dashboard = () => {
   }>({});
   const [loading, setLoading] = useState(true);
 
-  const username = localStorage.getItem("username") || "User";
+  const [user, setUser] = useState<IUser | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/users/me");
+        setUser(res.data);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        setUser(null); // fallback if not logged in / token expired
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -79,9 +100,15 @@ const Dashboard = () => {
 
   return (
     <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Hello, {username}!
-      </Typography>
+      <div>
+        {user ? (
+          <Typography variant="h4">Hello {user.name}</Typography>
+        ) : (
+          <Typography variant="h4">
+            You are not logged in. <a href="/login">Sign in</a>
+          </Typography>
+        )}
+      </div>
 
       <Box display="flex" flexWrap="wrap" gap={2} mb={4}>
         <Paper

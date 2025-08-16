@@ -16,7 +16,7 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
 
     const job = await JobApplication.create({
       ...req.body,
-      user: req.user.id, // bind application to the logged-in user
+      userId: req.user.id, // bind application to the logged-in user
     });
     res.status(201).json(job);
   } catch (err) {
@@ -31,7 +31,7 @@ export const getAllApplications = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: "Not authorized, no token" });
     }
 
-    const jobs = await JobApplication.find({ user: req.user.id });
+    const jobs = await JobApplication.find({ userId: req.user.id });
     res.status(200).json(jobs);
   } catch (err) {
     res
@@ -49,7 +49,7 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
 
     const application = await JobApplication.findOne({
       _id: req.params.id,
-      user: req.user.id,
+      userId: req.user.id,
     });
 
     if (!application) {
@@ -78,7 +78,7 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
       updateData.followUpReminder = new Date(updateData.followUpReminder);
 
     const updated = await JobApplication.findOneAndUpdate(
-      { _id: id, user: req.user.id },
+      { _id: id, userId: req.user.id },
       updateData,
       { new: true }
     );
@@ -120,7 +120,10 @@ export const getApplicationsCount = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: "Not authorized, no token" });
     }
 
-    const count = await JobApplication.countDocuments({ user: req.user.id });
+    const count = await JobApplication.countDocuments({ userId: req.user.id });
+    console.log("User from token:", req.user);
+    const apps = await JobApplication.find({ user: req.user.id });
+    console.log("Found applications:", apps);
     res.status(200).json({ count });
   } catch (err) {
     res
@@ -142,7 +145,7 @@ export const getApplicationsOverTime = async (
     const pipeline: PipelineStage[] = [
       {
         $match: {
-          user: req.user.id,
+          userId: req.user.id,
           appliedAt: { $type: "date" },
         },
       },
@@ -192,7 +195,7 @@ export const getApplicationsPerDay = async (
     }
 
     const data = await JobApplication.aggregate([
-      { $match: { user: req.user.id } },
+      { $match: { userId: req.user.id } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$appliedAt" } },
@@ -224,7 +227,7 @@ export const getApplicationsByStatus = async (
     }
 
     const results = await JobApplication.aggregate([
-      { $match: { user: req.user.id } },
+      { $match: { userId: req.user.id } },
       {
         $group: {
           _id: "$status",

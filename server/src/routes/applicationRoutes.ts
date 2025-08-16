@@ -39,9 +39,9 @@ router.post("/", protect, async (req, res) => {
 router.post("/", protect, createApplication);
 router.get("/", protect, getAllApplications);
 router.get("/followups/due", protect, getDueFollowUps);
-router.get("/:id", getApplicationById);
-router.put("/:id", updateApplication);
-router.put("/:id/followup-toggle", async (req, res) => {
+router.get("/:id", protect, getApplicationById);
+router.put("/:id", protect, updateApplication);
+router.put("/:id/followup-toggle", protect, async (req, res) => {
   try {
     const app = await JobApplication.findById(req.params.id);
     if (!app) return res.status(404).json({ message: "Application not found" });
@@ -55,14 +55,17 @@ router.put("/:id/followup-toggle", async (req, res) => {
     res.status(500).json({ message: "Failed to toggle follow-up status" });
   }
 });
-router.get("/dashboard/count", getApplicationsCount);
-router.get("/dashboard/trends", getApplicationsOverTime);
-router.get("/dashboard/activity", getApplicationsPerDay);
+router.get("/dashboard/count", protect, getApplicationsCount);
+router.get("/dashboard/trends", protect, getApplicationsOverTime);
+router.get("/dashboard/activity", protect, getApplicationsPerDay);
 // router.get("/dashboard/status", getApplicationsByStatus);
 
-router.get("/dashboard/status", async (req, res) => {
+router.get("/dashboard/status", protect, async (req, res) => {
   try {
     const pipeline = [
+      {
+        $match: { userId: req.user.id }, // only get applications of this user
+      },
       {
         $group: {
           _id: "$status",

@@ -42,3 +42,12 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(401).json({ message: "Invalid credentials" });
   }
 };
+
+export const getMe = async (req: any, res: Response) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching user" });
+  }
+};
