@@ -10,6 +10,8 @@ import BlogDetail from "./components/BlogDetail";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import PrivateRoute from "./components/PrivateRoute";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
           <Route path="/applications/:id" element={<ApplicationDetails />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/blog/:id" element={<BlogDetail />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Routes>
       </Box>
     </>
