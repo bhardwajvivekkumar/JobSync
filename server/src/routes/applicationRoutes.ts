@@ -9,6 +9,7 @@ import {
   getApplicationsOverTime,
   getApplicationsPerDay,
   getApplicationsByStatus,
+  deleteApplication,
 } from "../controllers/applicationController";
 import JobApplication from "../models/JobApplication";
 import { protect } from "../middleware/authMiddleware";
@@ -87,5 +88,7 @@ router.get("/dashboard/status", protect, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+router.delete("/:id", protect, deleteApplication);
 
 export default router;

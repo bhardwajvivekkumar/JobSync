@@ -26,7 +26,6 @@ app.get("/", (_, res) => {
 
 app.use("/api/applications", applicationRoutes);
 
-// Connect to DB and start server
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
