@@ -59,12 +59,10 @@ export class ApplicationController {
     const userId = this.requireUser(req);
     const deleted = await this.service.delete(userId, req.params.id);
     if (!deleted) throw new NotFoundError("Application not found");
-    return res
-      .status(200)
-      .json({
-        message: "Application deleted successfully",
-        deletedId: req.params.id,
-      });
+    return res.status(200).json({
+      message: "Application deleted successfully",
+      deletedId: req.params.id,
+    });
   };
 
   dueFollowUps = async (req: Request, res: Response) => {
@@ -105,7 +103,7 @@ export class ApplicationController {
     const userId = this.requireUser(req);
     const results = await this.service.byStatus(userId);
     const formatted = results.map((r) => ({
-      status: r._id || "Unknown",
+      status: r._id.charAt(0).toUpperCase() + r._id.slice(1),
       count: r.count,
     }));
     return res.status(200).json(formatted);

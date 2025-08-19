@@ -4,7 +4,7 @@ export const createApplicationSchema = z.object({
   body: z.object({
     company: z.string().min(1),
     jobTitle: z.string().min(1),
-    jobLink: z.string().url().optional().or(z.literal("")).optional(),
+    jobLink: z.string().optional(),
     location: z.string().optional(),
     status: z
       .enum(["Applied", "Interview", "Offer", "Rejected", "Other"])
@@ -22,7 +22,7 @@ export const updateApplicationSchema = z.object({
   body: z.object({
     company: z.string().min(1).optional(),
     jobTitle: z.string().min(1).optional(),
-    jobLink: z.string().url().optional().or(z.literal("")).optional(),
+    jobLink: z.string().optional(),
     location: z.string().optional(),
     status: z
       .enum(["Applied", "Interview", "Offer", "Rejected", "Other"])

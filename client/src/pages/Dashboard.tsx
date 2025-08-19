@@ -58,18 +58,17 @@ const Dashboard = () => {
         setCount(c.data.count);
         setTrends(t.data);
 
-        const statusLabelMap: Record<string, keyof typeof statusStats> = {
-          applied: "Applied",
-          interviewing: "Interview",
-          offer: "Offer",
-          rejected: "Rejected",
+        // Format response array into object
+        const formatted: typeof statusStats = {
+          Applied: 0,
+          Interview: 0,
+          Offer: 0,
+          Rejected: 0,
         };
 
-        const formatted: typeof statusStats = {};
-        for (const [status, count] of Object.entries(s.data)) {
-          const key = statusLabelMap[status] || status;
-          formatted[key as keyof typeof statusStats] = Number(count);
-        }
+        s.data.forEach((item: { status: string; count: number }) => {
+          formatted[item.status as keyof typeof statusStats] = item.count;
+        });
 
         setStatusStats(formatted);
       } catch (err) {
