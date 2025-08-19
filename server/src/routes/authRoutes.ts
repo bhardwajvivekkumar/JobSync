@@ -1,39 +1,16 @@
 import express from "express";
-import {
-  registerUser,
-  loginUser,
-  getMe,
-  forgotPassword,
-  resetPassword,
-  deleteUser,
-} from "../controllers/authController";
+import { AuthController } from "../controllers/authController";
 import { protect } from "../middleware/authMiddleware";
-import { sendResetEmail } from "../utils/mailer";
+import { asyncHandler } from "../middleware/asyncHandler";
 
 const router = express.Router();
+const ctrl = new AuthController();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
-
-router.get("/me", protect, getMe);
-
-router.get("/test-email", async (req, res) => {
-  try {
-    const testRecipient = "vk3411381@gmail.com";
-    const info = await sendResetEmail(
-      testRecipient,
-      "Test User",
-      "http://localhost:3000/reset-password/fake-token"
-    );
-
-    res.json({ success: true, info });
-  } catch (error: any) {
-    console.error("Error in test-email route:", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-router.delete("/delete", protect, deleteUser);
+router.post("/register", asyncHandler(ctrl.register));
+router.post("/login", asyncHandler(ctrl.login));
+router.post("/forgot-password", asyncHandler(ctrl.forgotPassword));
+router.post("/reset-password", asyncHandler(ctrl.resetPassword));
+router.get("/me", protect, asyncHandler(ctrl.me));
+router.delete("/delete", protect, asyncHandler(ctrl.deleteUser));
 
 export default router;

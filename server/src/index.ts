@@ -3,10 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import applicationRoutes from "./routes/applicationRoutes";
-import userRoutes from "./routes/authRoutes";
 import authRoutes from "./routes/authRoutes";
-import testRoutes from "./routes/authRoutes";
 import exportRoutes from "./routes/exportRoutes";
+import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
 
@@ -15,16 +14,18 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/users", userRoutes);
+
+// routes
+app.use("/api/users", authRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/", testRoutes);
+app.use("/api/applications", applicationRoutes);
 app.use("/api/jobs/export", exportRoutes);
 
-app.get("/", (_, res) => {
-  res.send("Job Tracker API is running");
-});
+// simple health
+app.get("/", (_req, res) => res.send("Job Tracker API is running"));
 
-app.use("/api/applications", applicationRoutes);
+// global error handler
+app.use(errorHandler);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

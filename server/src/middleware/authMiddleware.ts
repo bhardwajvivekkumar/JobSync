@@ -1,34 +1,28 @@
 import jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
 import { User } from "../models/User";
-import { Request, Response, NextFunction } from "express";
+import { UnauthorizedError } from "../utils/error";
 
-export const protect = async (
+export async function protect(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
-) => {
-  const token = req?.headers?.authorization?.replace("Bearer ", "");
+) {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
+  if (!token) throw new UnauthorizedError();
 
-  if (!token) {
-    return res.status(401).json({ message: "Not authorized, no token" });
-  }
+  const secret = process.env.JWT_SECRET!;
+  const decoded = jwt.verify(token, secret) as { id: string };
 
-  try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-    const user = await User.findById(decoded.id).select("-password");
+  const user = await User.findById(decoded.id).select("-password");
+  if (!user) throw new UnauthorizedError("Invalid token");
 
-    if (!user) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
+  req.user = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  };
 
-    req.user = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    };
-
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Not authorized, token failed" });
-  }
-};
+  next();
+}
