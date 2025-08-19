@@ -6,6 +6,7 @@ import applicationRoutes from "./routes/applicationRoutes";
 import authRoutes from "./routes/authRoutes";
 import exportRoutes from "./routes/exportRoutes";
 import { errorHandler } from "./middleware/errorHandler";
+import path from "path";
 
 dotenv.config();
 
@@ -15,6 +16,10 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Serve React SPA
+const wwwrootPath = path.resolve(__dirname, "wwwroot");
+app.use(express.static(wwwrootPath));
+
 // routes
 app.use("/api/users", authRoutes);
 app.use("/api/auth", authRoutes);
@@ -22,10 +27,14 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/jobs/export", exportRoutes);
 
 // simple health
-app.get("/", (_req, res) => res.send("Job Tracker API is running"));
+app.get("/health", (_req, res) => res.send("Job Tracker API is running"));
 
 // global error handler
 app.use(errorHandler);
+
+app.use((_, res) => {
+  res.sendFile(path.join(wwwrootPath, "index.html"));
+});
 
 connectDB().then(() => {
   app.listen(PORT, () => {
