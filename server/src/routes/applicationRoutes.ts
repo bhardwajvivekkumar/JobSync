@@ -18,7 +18,7 @@ const router = express.Router();
 
 router.get("/", protect, async (req, res) => {
   try {
-    const apps = await JobApplication.find({ userId: req.user._id }); // req.user comes from protect middleware
+    const apps = await JobApplication.find({ userId: req.user.id }); // req.user comes from protect middleware
     res.json(apps);
   } catch (error) {
     res.status(500).json({ message: "Error fetching applications", error });
@@ -29,7 +29,7 @@ router.post("/", protect, async (req, res) => {
   try {
     const application = await JobApplication.create({
       ...req.body,
-      userId: req.user._id, // store logged-in user
+      userId: req.user.id, // store logged-in user
     });
     res.status(201).json(application);
   } catch (error) {
