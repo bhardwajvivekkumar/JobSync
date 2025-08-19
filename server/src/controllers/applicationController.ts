@@ -233,7 +233,7 @@ export const getApplicationsByStatus = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteApplication = async (req: AuthRequest, res: Response) => {
+export const deleteApplication = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
