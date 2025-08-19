@@ -2,13 +2,8 @@ import { Request, Response } from "express";
 import JobApplication from "../models/JobApplication";
 import { PipelineStage } from "mongoose";
 
-// Ensure Request has user
-interface AuthRequest extends Request {
-  user?: { id: string };
-}
-
 // CREATE application for logged-in user
-export const createApplication = async (req: AuthRequest, res: Response) => {
+export const createApplication = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -25,7 +20,7 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
 };
 
 // GET all applications for logged-in user
-export const getAllApplications = async (req: AuthRequest, res: Response) => {
+export const getAllApplications = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -41,7 +36,7 @@ export const getAllApplications = async (req: AuthRequest, res: Response) => {
 };
 
 // GET one application (only if owned by the user)
-export const getApplicationById = async (req: AuthRequest, res: Response) => {
+export const getApplicationById = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -63,7 +58,7 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
 };
 
 // UPDATE application (only if owned by the user)
-export const updateApplication = async (req: AuthRequest, res: Response) => {
+export const updateApplication = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -94,7 +89,7 @@ export const updateApplication = async (req: AuthRequest, res: Response) => {
 };
 
 // GET due follow-ups for the logged-in user
-export const getDueFollowUps = async (req: AuthRequest, res: Response) => {
+export const getDueFollowUps = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -114,7 +109,7 @@ export const getDueFollowUps = async (req: AuthRequest, res: Response) => {
 };
 
 // GET application count for logged-in user
-export const getApplicationsCount = async (req: AuthRequest, res: Response) => {
+export const getApplicationsCount = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -133,10 +128,7 @@ export const getApplicationsCount = async (req: AuthRequest, res: Response) => {
 };
 
 // GET monthly application trends for logged-in user
-export const getApplicationsOverTime = async (
-  req: AuthRequest,
-  res: Response
-) => {
+export const getApplicationsOverTime = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -185,10 +177,7 @@ export const getApplicationsOverTime = async (
 };
 
 // GET heatmap per day for logged-in user
-export const getApplicationsPerDay = async (
-  req: AuthRequest,
-  res: Response
-) => {
+export const getApplicationsPerDay = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -217,10 +206,7 @@ export const getApplicationsPerDay = async (
 };
 
 // GET applications by status for logged-in user
-export const getApplicationsByStatus = async (
-  req: AuthRequest,
-  res: Response
-) => {
+export const getApplicationsByStatus = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized, no token" });
