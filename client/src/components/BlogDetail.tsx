@@ -1,19 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Button,
+  Container,
+  Divider,
+  IconButton,
+  Snackbar,
+  Fade,
+  useMediaQuery,
+  CssBaseline,
+} from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { marked } from "marked";
 import axios from "axios";
+import DOMPurify from "dompurify"; // For sanitizing HTML
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+
+// Register language for code syntax highlighting
+SyntaxHighlighter.registerLanguage("javascript", js);
 
 interface BlogPost {
   title: string;
-  body_html: string;
+  body_markdown: string;
   readable_publish_date: string;
 }
 
 const BlogDetail = () => {
-  const { id } = useParams<{ id: string }>(); // Get the blog ID from the URL
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  // const location = useLocation();
+  // const fromPage = location.state?.fromPage || 1;
+
   const [blog, setBlog] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const isMobile = useMediaQuery("(max-width:600px)");
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: darkMode ? "dark" : "light",
+          background: {
+            default: darkMode ? "#121212" : "#f5f5f5",
+            paper: darkMode ? "#1e1e1e" : "#ffffff",
+          },
+        },
+        components: {
+          MuiCssBaseline: {
+            styleOverrides: {
+              body: {
+                transition: "all 0.4s ease-in-out",
+              },
+            },
+          },
+        },
+        typography: {
+          fontFamily: '"Roboto", sans-serif',
+        },
+      }),
+    [darkMode]
+  );
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+    setShowSnackbar(true);
+    setTimeout(() => setShowSnackbar(false), 2000);
+  };
+
+  const handleBackClick = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     const fetchBlogDetail = async () => {
@@ -26,99 +89,167 @@ const BlogDetail = () => {
         setLoading(false);
       }
     };
-    if (id) {
-      fetchBlogDetail();
-    }
+    if (id) fetchBlogDetail();
   }, [id]);
 
-  const handleBackClick = () => {
-    navigate(-1); // Go back to the previous page
+  const getParsedContent = () => {
+    if (!blog?.body_markdown) return "";
+
+    marked.setOptions({});
+
+    const dirtyHTML =
+      typeof marked.parse === "function"
+        ? marked.parse(blog.body_markdown)
+        : "";
+
+    const htmlString = typeof dirtyHTML === "string" ? dirtyHTML : "";
+
+    // lazy loading
+    const withLazyImages = htmlString.replace(
+      /<img([^>]*)>/g,
+      '<img loading="lazy" class="fade-in" $1>'
+    );
+
+    return DOMPurify.sanitize(withLazyImages);
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" mt={8}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box p={3}>
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        top="65px"
-        width="100%"
-        sx={{
-          position: { xs: "relative", sm: "sticky" },
-          top: { sm: "65px", xs: "auto" },
-          zIndex: 10,
-          backgroundColor: "#fff",
-          padding: "10px",
-          borderRadius: "4px",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, flex: 1 }}>
-          {blog?.title}
-        </Typography>
-        <Button
-          variant="outlined"
-          onClick={handleBackClick}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+
+      <Container maxWidth="md">
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mt={4}
           sx={{
-            borderColor: "black",
-            color: "black",
-            "&:hover": {
-              backgroundColor: "black",
-              color: "white",
-            },
-            fontSize: { xs: "0.75rem", sm: "1rem" },
-            padding: { xs: "6px 12px", sm: "8px 16px" },
+            position: { xs: "relative", sm: "sticky" },
+            top: { sm: "65px", xs: "auto" },
+            zIndex: 10,
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 2,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            px: isMobile ? 1.5 : 2,
+            py: 1.5,
           }}
         >
-          Back
-        </Button>
-      </Box>
-
-      {blog ? (
-        <Box mt={4}>
-          <Typography variant="caption" color="text.secondary" sx={{ mb: 2 }}>
-            Published on {blog.readable_publish_date}
-          </Typography>
-
-          {/* Blog Content Styling */}
-          <Box
-            mt={2}
+          <Typography
+            variant="h5"
             sx={{
-              backgroundColor: "#f9f9f9",
-              borderRadius: "8px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              padding: { xs: "10px", sm: "16px" },
-              width: "100%",
-              margin: "0 auto",
-              lineHeight: 1.8,
-              fontFamily: '"Roboto", sans-serif',
-              overflowX: "hidden",
+              fontWeight: 700,
+              fontSize: isMobile ? "1.3rem" : "2rem",
+              flex: 1,
+              lineHeight: 1.2,
               wordBreak: "break-word",
-              whiteSpace: "pre-wrap",
             }}
           >
-            <div
-              dangerouslySetInnerHTML={{
-                __html: blog.body_html,
-              }} // Render full blog HTML content
-              className="blog-content"
-            />
+            {blog?.title}
+          </Typography>
+
+          <Box display="flex" alignItems="center" gap={1}>
+            <IconButton onClick={toggleDarkMode}>
+              {darkMode ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+            <Button
+              variant="outlined"
+              onClick={handleBackClick}
+              sx={{
+                borderColor: "text.primary",
+                color: "text.primary",
+                fontSize: isMobile ? "0.75rem" : "1rem",
+                "&:hover": {
+                  backgroundColor: "text.primary",
+                  color: theme.palette.background.paper,
+                },
+              }}
+            >
+              Back
+            </Button>
           </Box>
         </Box>
-      ) : (
-        <Typography variant="h6" color="error">
-          Blog not found
-        </Typography>
-      )}
-    </Box>
+
+        <Snackbar
+          open={showSnackbar}
+          message={`Dark Mode ${darkMode ? "On" : "Off"}`}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          TransitionComponent={Fade}
+          ContentProps={{
+            sx: {
+              backgroundColor: darkMode ? "#333" : "#000",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: "1rem",
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              boxShadow: "0px 4px 12px rgba(0,0,0,0.2)",
+            },
+          }}
+        />
+
+        {loading ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            height="70vh"
+          >
+            <CircularProgress color="primary" />
+            <Typography mt={2} variant="body2" color="text.secondary">
+              Loading blog post...
+            </Typography>
+          </Box>
+        ) : blog ? (
+          <Box mt={4}>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ fontStyle: "italic", textAlign: "right" }}
+            >
+              Published on {blog.readable_publish_date}
+            </Typography>
+
+            <Divider sx={{ mb: 3 }} />
+
+            <Box
+              className="blog-content"
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: "12px",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
+                padding: isMobile ? 2 : 3,
+                fontSize: "1rem",
+                lineHeight: 1.8,
+                overflowX: "hidden",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+                "& img": {
+                  maxWidth: "100%",
+                  borderRadius: "8px",
+                  margin: "1rem 0",
+                  transition: "opacity 0.5s ease-in-out",
+                  opacity: 1,
+                },
+                "& pre": {
+                  background: "transparent",
+                  padding: 0,
+                },
+              }}
+              dangerouslySetInnerHTML={{
+                __html: getParsedContent(),
+              }}
+            />
+          </Box>
+        ) : (
+          <Typography variant="h6" color="error" mt={4}>
+            Blog not found
+          </Typography>
+        )}
+      </Container>
+    </ThemeProvider>
   );
 };
 
