@@ -57,6 +57,8 @@ ResetPassword - AuthMailer
 <img width="1836" height="964" alt="Screenshot from 2025-08-19 18-36-21" src="https://github.com/user-attachments/assets/bf1be58b-999a-4047-bfa4-f9a8ebef7547" />
 <img width="1836" height="964" alt="Screenshot from 2025-08-19 18-36-29" src="https://github.com/user-attachments/assets/a17624b8-0d32-4d50-a77a-05c07bbdff1a" />
 <img width="1836" height="964" alt="Screenshot from 2025-08-19 18-36-46" src="https://github.com/user-attachments/assets/bf3f0a2c-3848-4961-b77f-e6785927f709" />
+<img width="1839" height="963" alt="Screenshot from 2025-09-02 17-29-58" src="https://github.com/user-attachments/assets/328026ca-591e-42c7-a4db-2167b2f1984c" />
+
 
 ---
 
